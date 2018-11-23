@@ -1,0 +1,75 @@
+@startuml
+autonumber
+title CI/CD phase 1 - Sequence Diagram
+
+actor presentor #red
+actor users #red
+collections users
+
+participant WebApp
+participant GameplayMS
+participant OS
+participant CodeEditor
+participant CodeQuality
+participant CiServer
+participant NotificationChannel
+participant PerformanceTest
+participant DependecySecurity
+
+== Initialization ==
+presentor -> users : Link to the web-app
+users --> users: Join a team
+note right
+  Each user is assigned with a team A/ B
+  by the app. In case of even number of users,
+  team is equally divided by app
+end note
+group gamePlay starts
+  users --> users: team A plays against team B for 30 seconds
+  note right
+    Gameplay: 
+      Each team repeatdely hit on other team's mascot in webApp.
+      Team with max hits wins the round played for 30 seconds
+  end note
+end
+
+== Code Edition ==
+presentor -> CodeEditor : edits the code live in github and commits
+note right
+  For webApp: Change in color of the mascots
+  For Microservice: Change in GamePlay time from 30s -> 20s
+end note
+
+== Test cases/ code quality checks ==
+CodeEditor -> CodeQuality : webhook triggers CodeQuality tool
+CodeEditor -> CiServer : webhook triggers CiServer tool
+CodeQuality -> CodeQuality : Checks code quality parameters
+CiServer -> CiServer : Runs test cases
+CiServer -> PerformanceTest : Runs performance test
+PerformanceTest -> CiServer : Validates results
+CiServer -> DependecySecurity : Runs security test
+DependecySecurity -> CiServer : Validates results
+
+
+== CI/ CD initiation ==
+CiServer -> NotificationChannel : Send notification to slack on failure/ success
+CodeQuality -> NotificationChannel : Send notification to slack on failure/ success
+NotificationChannel -> presentor : Gets test results
+alt is tests/ code quality == PASS
+  presentor -> CodeEditor : Merge the code
+  CodeEditor -> CiServer : Deployment starts
+  CiServer -> OS: Triggers deployment
+  CiServer -> NotificationChannel : Successful/ failure deployment
+  NotificationChannel -> presentor : Get deployment status
+  alt deployment == success
+    presentor -> presentor : Facilitate GamePlay
+    presentor -> users : display application monitoring using OS metrics
+    presentor -> users : display logs collected using OS metrics
+  else deployment == failure
+    presentor -> presentor : debug
+  end
+else is tests/ code quality == FAIL
+  presentor -> CodeEditor : Fix test case(s) and re-iterate
+end
+
+@enduml

@@ -1,1 +1,1 @@
-# sequence-diagrams
+# Sequence Diagrams
